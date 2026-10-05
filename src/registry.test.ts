@@ -29,15 +29,19 @@ describe('searchTools', () => {
   })
 
   it('matches by name, ignoring case', () => {
-    expect(searchTools('DEMO').map((tool) => tool.id)).toContain('demo')
+    expect(searchTools('COMPRESS').map((tool) => tool.id)).toContain(
+      'image-compress',
+    )
   })
 
   it('matches by keyword', () => {
-    expect(searchTools('playground').map((tool) => tool.id)).toContain('demo')
+    expect(searchTools('heic').map((tool) => tool.id)).toContain(
+      'image-convert',
+    )
   })
 
   it('requires every search term to match', () => {
-    expect(searchTools('demo zzz-nonexistent')).toHaveLength(0)
+    expect(searchTools('compress zzz-nonexistent')).toHaveLength(0)
   })
 
   it('returns nothing for a nonsense query', () => {

@@ -66,16 +66,57 @@ export const en = {
   'compare.before': 'Before',
   'compare.after': 'After',
 
-  'demo.intro':
-    'This is a temporary demo tool. It shows the shared UI pieces working: drop a few images below.',
-  'demo.quality': 'Quality',
-  'demo.processing': 'Preparing your files…',
-  'demo.done': 'Ready',
-  'demo.pickedFiles': 'Selected files',
-  'demo.downloadOriginal': 'Download original',
-  'demo.reset': 'Choose different files',
-  'demo.note':
-    'Real tools are added in the next modules; this page only proves the registry and shared components work.',
+  'img.original': 'Original',
+  'img.result': 'Result',
+  'img.processing': 'Processing image…',
+  'img.reset': 'Choose another image',
+  'img.largeImage':
+    'This is a large image ({megapixels} megapixels). It may take a while on a phone.',
+  'img.error.decode':
+    'This image could not be opened. It may be damaged, or in a format this browser cannot read.',
+  'img.error.process':
+    'Something went wrong while processing this image. Please try another one.',
+  'img.progress.quality': 'Finding the best quality…',
+  'img.progress.scale': 'Making it smaller…',
+  'img.target.missed':
+    'We could not get under {size}. This is the smallest version we could make.',
+  'img.unit.kb': 'KB',
+  'img.unit.mb': 'MB',
+
+  'img.compress.mode': 'How should we make it smaller?',
+  'img.compress.byQuality': 'Set quality',
+  'img.compress.bySize': 'Set a size limit',
+  'img.compress.quality': 'Quality',
+  'img.compress.qualityHint': 'Lower is smaller. 80% is a good default.',
+  'img.compress.targetSize': 'Target size',
+  'img.compress.targetHint':
+    'We will find the best quality that fits under this size.',
+  'img.compress.process': 'Make smaller',
+  'img.compress.formatNote': 'Output format: {format}',
+
+  'img.resize.mode': 'Resize by',
+  'img.resize.byPixels': 'Pixels',
+  'img.resize.byPercent': 'Percentage',
+  'img.resize.width': 'Width (px)',
+  'img.resize.height': 'Height (px)',
+  'img.resize.lock': 'Keep shape (aspect ratio)',
+  'img.resize.percent': 'Scale',
+  'img.resize.preset': 'Preset',
+  'img.resize.presetCustom': 'Custom',
+  'img.resize.process': 'Resize image',
+
+  'img.convert.format': 'Convert to',
+  'img.convert.current': 'This file is {format}.',
+  'img.convert.background': 'Background colour',
+  'img.convert.backgroundHint': 'Fills transparent areas when saving as JPG.',
+  'img.convert.process': 'Convert image',
+
+  'preset.hd': 'HD',
+  'preset.fullHd': 'Full HD',
+  'preset.instagramPost': 'Instagram post',
+  'preset.instagramStory': 'Instagram story',
+  'preset.facebookCover': 'Facebook cover',
+  'preset.whatsappProfile': 'WhatsApp profile',
 } as const
 
 export type TranslationKey = keyof typeof en

@@ -9,7 +9,9 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ComponentType, LazyExoticComponent } from 'react'
 
-import { demoMeta } from '@/tools/demo/meta'
+import { imageCompressMeta } from '@/tools/image-compress/meta'
+import { imageConvertMeta } from '@/tools/image-convert/meta'
+import { imageResizeMeta } from '@/tools/image-resize/meta'
 
 export type ToolCategory = 'Image' | 'PDF' | 'Text' | 'Utilities'
 
@@ -43,7 +45,11 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
 ]
 
 /** Every tool in the app, in home page order. */
-export const tools: Tool[] = [demoMeta]
+export const tools: Tool[] = [
+  imageCompressMeta,
+  imageResizeMeta,
+  imageConvertMeta,
+]
 
 /** Find tools matching a free-text query across name, description and keywords. */
 export function searchTools(query: string, list: Tool[] = tools): Tool[] {
