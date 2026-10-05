@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="DailyKit">
+  <rect width="64" height="64" rx="14" fill="#4f46e5" />
+  <path
+    d="M20 18h11a14 14 0 0 1 0 28H20a2 2 0 0 1-2-2V20a2 2 0 0 1 2-2Zm3 6v16h8a8 8 0 0 0 0-16h-8Z"
+    fill="#ffffff"
+  />
+  <path d="M40 32l3.2 6.8L50 42l-6.8 3.2L40 52l-3.2-6.8L30 42l6.8-3.2L40 32Z" fill="#a5b4fc" />
+</svg>

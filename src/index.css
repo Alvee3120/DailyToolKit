@@ -1,0 +1,23 @@
+@import 'tailwindcss';
+
+/*
+ * DailyKit base styles.
+ * Tailwind v4 dark mode follows the system preference out of the box.
+ * A manual theme toggle (class-based dark variant) is added in Module 1.
+ */
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

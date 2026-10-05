@@ -1,0 +1,18 @@
+# Cloudflare Pages headers
+# Docs: https://developers.cloudflare.com/pages/configuration/headers/
+#
+# NOTE: COOP/COEP are intentionally NOT set yet. Cross-origin isolation can
+# speed up multithreaded WASM but also breaks loading some models/scripts from
+# other origins. Per the project plan we evaluate it in Module 5 and decide.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(self), microphone=(), geolocation=()
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https: blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+
+# Hashed build assets are content-addressed, so they can be cached forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
