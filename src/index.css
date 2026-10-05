@@ -1,13 +1,19 @@
 @import 'tailwindcss';
 
 /*
- * DailyKit base styles.
- * Tailwind v4 dark mode follows the system preference out of the box.
- * A manual theme toggle (class-based dark variant) is added in Module 1.
+ * Class-based dark mode. The `dark` class is applied to <html> by
+ * public/theme-init.js before first paint (no flash) and kept in sync by
+ * src/app/ThemeProvider.tsx. Tailwind v4's default is a media query, so we
+ * override the variant here.
  */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
 }
 
 html,

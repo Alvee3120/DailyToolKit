@@ -3,14 +3,16 @@
 DailyKit only uses freely redistributable dependencies. Every new dependency
 and every AI model must be checked and recorded here before it is added.
 
-All dependencies are permissive (MIT / Apache-2.0) unless noted otherwise.
+All dependencies are permissive (MIT, ISC, Apache-2.0).
 
 ## Runtime dependencies
 
-| Package   | Version | License | Notes              |
-| --------- | ------- | ------- | ------------------ |
-| react     | 19.3.0  | MIT     | UI library         |
-| react-dom | 19.3.0  | MIT     | React DOM renderer |
+| Package          | Version | License | Notes               |
+| ---------------- | ------- | ------- | ------------------- |
+| react            | 19.3.0  | MIT     | UI library          |
+| react-dom        | 19.3.0  | MIT     | React DOM renderer  |
+| react-router-dom | 7.18.4  | MIT     | Client-side routing |
+| lucide-react     | 1.52.0  | ISC     | Icon set            |
 
 ## Development dependencies
 

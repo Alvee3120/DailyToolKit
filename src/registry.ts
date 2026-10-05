@@ -3,8 +3,13 @@
  *
  * Every tool registers itself here. The home page, search and navigation are
  * all generated from this list, so adding a tool never means editing the home
- * page by hand.
+ * page or the router by hand.
  */
+
+import type { LucideIcon } from 'lucide-react'
+import type { ComponentType, LazyExoticComponent } from 'react'
+
+import { demoMeta } from '@/tools/demo/meta'
 
 export type ToolCategory = 'Image' | 'PDF' | 'Text' | 'Utilities'
 
@@ -14,14 +19,19 @@ export interface ToolMeta {
   name: string
   description: string
   category: ToolCategory
-  /** lucide-react icon name, resolved into a component in Module 1. */
-  icon: string
+  /** lucide-react icon component shown on the home page card. */
+  icon: LucideIcon
   /** Route path for the tool page. Must start with "/". */
   route: string
   /** Extra words that should match this tool in the home page search. */
   keywords: string[]
   /** True when the tool downloads a large AI model the first time it runs. */
   heavy: boolean
+}
+
+export interface Tool extends ToolMeta {
+  /** Lazily-loaded tool page, so each tool ships in its own chunk. */
+  component: LazyExoticComponent<ComponentType>
 }
 
 /** Display order for the categories shown on the home page. */
@@ -32,5 +42,26 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   'Utilities',
 ]
 
-/** Populated as tools are built, starting in Module 1. */
-export const tools: ToolMeta[] = []
+/** Every tool in the app, in home page order. */
+export const tools: Tool[] = [demoMeta]
+
+/** Find tools matching a free-text query across name, description and keywords. */
+export function searchTools(query: string, list: Tool[] = tools): Tool[] {
+  const trimmed = query.trim().toLowerCase()
+  if (!trimmed) return list
+
+  const terms = trimmed.split(/\s+/)
+
+  return list.filter((tool) => {
+    const haystack = [
+      tool.name,
+      tool.description,
+      tool.category,
+      ...tool.keywords,
+    ]
+      .join(' ')
+      .toLowerCase()
+
+    return terms.every((term) => haystack.includes(term))
+  })
+}

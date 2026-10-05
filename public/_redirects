@@ -1,0 +1,3 @@
+# Single-page app fallback: unknown paths are handled by the React Router
+# (which shows a friendly 404), instead of Cloudflare Pages returning its own.
+/*    /index.html   200

@@ -35,5 +35,13 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Context/provider modules legitimately export a component plus hooks and
+    // constants. Fast-refresh boundaries only matter for the UI files below.
+    files: ['src/i18n/**', 'src/app/ThemeProvider.tsx', 'src/lib/**'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
   prettier,
 )

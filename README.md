@@ -64,8 +64,14 @@ src/
   registry.ts   # The list of all tools (drives home page, search, nav)
   i18n/         # UI strings (English now, Bangla-ready)
 public/
-  _headers      # Cloudflare Pages headers
+  _headers      # Cloudflare Pages security headers
+  _redirects    # SPA fallback so client-side routes survive deep links
+  theme-init.js # Applies the saved theme before first paint
 ```
+
+Routing is generated from `src/registry.ts`: the home page, search, and the
+router all read the same tool list, so adding a tool means adding a folder with
+`meta.ts` + `index.tsx` and one line in the registry.
 
 ## Deploying to Cloudflare Pages
 
