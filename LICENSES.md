@@ -7,12 +7,14 @@ All dependencies are permissive (MIT, ISC, Apache-2.0).
 
 ## Runtime dependencies
 
-| Package          | Version | License | Notes               |
-| ---------------- | ------- | ------- | ------------------- |
-| react            | 19.3.0  | MIT     | UI library          |
-| react-dom        | 19.3.0  | MIT     | React DOM renderer  |
-| react-router-dom | 7.18.4  | MIT     | Client-side routing |
-| lucide-react     | 1.52.0  | ISC     | Icon set            |
+| Package          | Version | License    | Notes               |
+| ---------------- | ------- | ---------- | ------------------- |
+| react            | 19.3.0  | MIT        | UI library          |
+| react-dom        | 19.3.0  | MIT        | React DOM renderer  |
+| react-router-dom | 7.18.4  | MIT        | Client-side routing |
+| lucide-react     | 1.52.0  | ISC        | Icon set            |
+| comlink          | 4.4.2   | Apache-2.0 | Web Worker RPC      |
+| heic2any         | 0.0.4   | MIT        | HEIC/HEIF decoding  |
 
 ## Development dependencies
 

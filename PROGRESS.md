@@ -6,7 +6,7 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
 | --- | ----------------------------------------------------- | ------ | ---------- |
 | 0   | Project Setup & Deployment Pipeline                   | ✅     | 2026-10-05 |
 | 1   | App Shell & Shared Components                         | ✅     | 2026-10-05 |
-| 2   | Image Compress, Resize & Convert                      | ⬜     |            |
+| 2   | Image Compress, Resize & Convert                      | ✅     | 2026-10-05 |
 | 3   | Image Crop, Rotate & Flip                             | ⬜     |            |
 | 4   | Watermark & Text Overlay                              | ⬜     |            |
 | 5   | Background Removal (AI, in-browser)                   | ⬜     |            |
@@ -83,3 +83,44 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
   tool loading, image-upload flow, friendly wrong-type error, 404 page, and a
   360px viewport with ≥44px tap targets and no horizontal overflow.
 - Bundle after Module 1: main chunk 105.65 kB gzipped (budget ~200 kB).
+
+### Module 2 — Image Compress, Resize & Convert (2026-10-05)
+
+- Added `comlink` 4.4.2 (Apache-2.0) for the worker RPC and `heic2any` 0.0.4
+  (MIT) for HEIC input.
+- **Chose three separate registered tools** (`image-compress`, `image-resize`,
+  `image-convert`) over one tabbed page: each surfaces in search on its own
+  ("compress", "heic", "full hd"), pages stay small, and it matches the
+  one-route-per-tool model. Shared behaviour lives in `src/lib/image/*` and the
+  `useImageJob` hook instead of duplicated page code.
+- **Shared image pipeline** in `src/lib/image`: `format.ts` (pure helpers),
+  `search.ts` (pure binary search), `pipeline.ts` (canvas draw + encode),
+  `worker.ts` (Comlink `expose`), `client.ts` (worker client + HEIC + main
+  thread fallback). The pipeline code is identical whether it runs in the
+  worker (OffscreenCanvas) or the fallback (<canvas>).
+- **Off the main thread**: all encode/compress work runs in a Web Worker via
+  Comlink. `createImageBitmap` decodes; the worker binary-searches quality, and
+  if even the lowest quality is too big it downscales and retries. Verified the
+  worker is actually created (`worker.ts?worker_file&type=module` is fetched).
+- **HEIC** is converted on the main thread by heic2any first (it needs DOM
+  APIs), then handed to the worker. heic2any is dynamically imported, so its
+  344 kB gzip chunk only loads when a HEIC file is chosen.
+- Compress offers **quality** and **target-size** modes; the target search is a
+  binary search with dimension fallback, and a friendly message appears if the
+  target cannot be reached.
+- Resize offers pixels (with aspect lock) or percentage, plus HD/Full HD/
+  Instagram/Facebook/WhatsApp presets. Convert outputs JPG/PNG/WebP with a
+  quality slider and a background colour for JPEG transparency.
+- The **Demo tool was removed** now that real tools exist.
+- Image tools remember their last settings (mode, quality, target size, preset)
+  via localStorage.
+- Verified in a real browser with a real **5.7 MB / 12 MP** photo: compressed to
+  **194 KB** (under the 200 KB target) with a **max main-thread frame gap of
+  106 ms** (i.e. no freeze); resize preset produced 1920×1080; JPEG→WebP
+  conversion kept dimensions. 360px viewport: no horizontal overflow, all tap
+  targets ≥44px. 47 unit tests pass.
+- Bundle: main chunk 106 kB gzip; three tool chunks + worker + useImageJob all
+  code-split; heic2any 345 kB gzip loaded on demand only.
+- Note: the target-size search on a pathological 12 MP _noise_ image took ~13 s
+  and downscaled to 3306×2480. Real photos converge much faster; a time
+  estimate/cancel button is planned for Module 12.
