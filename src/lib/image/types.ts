@@ -66,6 +66,50 @@ export interface TransformOptions {
   crop?: CropRect
 }
 
+/** Where a watermark sits on the image. */
+export type WatermarkPosition =
+  | 'top-left'
+  | 'top-center'
+  | 'top-right'
+  | 'middle-left'
+  | 'center'
+  | 'middle-right'
+  | 'bottom-left'
+  | 'bottom-center'
+  | 'bottom-right'
+
+interface WatermarkBase {
+  /** Opacity, 0–1. */
+  opacity: number
+  /** Clockwise rotation in degrees. */
+  rotation: number
+  position: WatermarkPosition
+  /** Gap from the edge, as a fraction of the longest side. */
+  margin: number
+}
+
+export interface TextWatermark extends WatermarkBase {
+  kind: 'text'
+  text: string
+  /** A CSS generic family so it renders the same in the worker. */
+  fontFamily: string
+  bold: boolean
+  italic: boolean
+  /** Font size as a fraction of the longest side. */
+  size: number
+  color: string
+}
+
+export interface ImageWatermark extends WatermarkBase {
+  kind: 'image'
+  /** The logo, decoded inside the worker. */
+  logo: Blob
+  /** Logo width as a fraction of the base image width. */
+  scale: number
+}
+
+export type Watermark = TextWatermark | ImageWatermark
+
 export interface TargetProgress {
   /** 0–1. */
   fraction: number
@@ -83,6 +127,11 @@ export interface ImageWorkerApi {
   transform(
     blob: Blob,
     transform: TransformOptions,
+    options: ProcessOptions,
+  ): Promise<ProcessResult>
+  watermark(
+    blob: Blob,
+    watermark: Watermark,
     options: ProcessOptions,
   ): Promise<ProcessResult>
 }

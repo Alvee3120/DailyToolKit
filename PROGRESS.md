@@ -8,7 +8,7 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
 | 1   | App Shell & Shared Components                         | ✅     | 2026-10-05 |
 | 2   | Image Compress, Resize & Convert                      | ✅     | 2026-10-05 |
 | 3   | Image Crop, Rotate & Flip                             | ✅     | 2026-10-06 |
-| 4   | Watermark & Text Overlay                              | ⬜     |            |
+| 4   | Watermark & Text Overlay                              | ✅     | 2026-10-06 |
 | 5   | Background Removal (AI, in-browser)                   | ⬜     |            |
 | 6   | PDF Pages: Images→PDF, Merge, Page Selector, Organize | ⬜     |            |
 | 7   | PDF to Images & PDF Compress                          | ⬜     |            |
@@ -159,3 +159,30 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
 - Side fix: added `.kilo` to the ESLint ignores and `.gitignore` — a stray agent-worktree
   copy inside the repo made typescript-eslint fail with "multiple candidate
   TSConfigRootDirs".
+
+### Module 4 — Watermark & Text Overlay (2026-10-06)
+
+- Shipped as **one tool** (`image-watermark`, "Watermark & text") with a Text/Logo switch,
+  rather than two pages: both modes share the exact same position grid, size, opacity,
+  rotation and margin controls plus the same preview, so splitting would have duplicated
+  the whole editor. Search covers both ("watermark", "text on image", "logo", "stamp").
+- **Watermark step added to the shared pipeline**: `Watermark` types (text | image),
+  `renderWatermark()` (base + watermark) and `watermarkBitmap()`. The logo is passed to
+  the worker as a `Blob` and decoded there; text uses CSS generic families
+  (sans-serif/serif/monospace) so it renders identically in the worker without webfonts.
+- **WYSIWYG preview**: `WatermarkPreview` renders a canvas with the _same_ `renderWatermark`
+  function the worker uses, so the preview is pixel-accurate; the canvas is capped at 960px
+  and redrawn on every change. No round-trip needed while dragging sliders.
+- **9-position grid** (`PositionPicker`, 44px radio targets) with margin, plus size, opacity
+  (0–1) and rotation (−180…180°) sliders. Text adds an input, font, colour, bold and italic;
+  the logo mode adds a file picker with a thumbnail.
+- Positioning is all fractional (margin/size as a fraction of the longest side, logo width
+  as a fraction of the image width), so preview and full-resolution output match at any size.
+- No new dependencies, so `LICENSES.md` is unchanged.
+- Verified in a real browser: preview bottom-right max brightness 230 (matches the expected
+  75%-white-over-yellow blend), moving to top-left gave 216 (75%-white-over-red); text apply
+  produced `…-watermarked.png`; logo apply sampled exactly `251,50,199` at the logo centre
+  (75% magenta over yellow) with the other quadrants untouched. Confirmed the off-main-thread
+  worker asset was fetched. 360px viewport: no horizontal overflow, all radio targets ≥44px.
+  81 unit tests pass.
+- Bundle: `image-watermark` 2.78 kB gzip (code-split); main chunk ~108 kB gzip.

@@ -14,6 +14,7 @@ import { imageConvertMeta } from '@/tools/image-convert/meta'
 import { imageCropMeta } from '@/tools/image-crop/meta'
 import { imageResizeMeta } from '@/tools/image-resize/meta'
 import { imageRotateMeta } from '@/tools/image-rotate/meta'
+import { imageWatermarkMeta } from '@/tools/image-watermark/meta'
 
 export type ToolCategory = 'Image' | 'PDF' | 'Text' | 'Utilities'
 
@@ -53,6 +54,7 @@ export const tools: Tool[] = [
   imageConvertMeta,
   imageCropMeta,
   imageRotateMeta,
+  imageWatermarkMeta,
 ]
 
 /** Find tools matching a free-text query across name, description and keywords. */

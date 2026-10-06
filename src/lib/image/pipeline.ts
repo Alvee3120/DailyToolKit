@@ -9,6 +9,8 @@ import type {
   TargetProgress,
   TargetSizeOptions,
   TransformOptions,
+  Watermark,
+  WatermarkPosition,
 } from './types'
 
 type AnyCanvas = OffscreenCanvas | HTMLCanvasElement
@@ -197,6 +199,172 @@ export async function transformBitmap(
     width: target.width,
     height: target.height,
     format: options.format,
+  }
+}
+
+function column(position: WatermarkPosition): 'left' | 'center' | 'right' {
+  if (position.endsWith('left')) return 'left'
+  if (position.endsWith('right')) return 'right'
+  return 'center'
+}
+
+function row(position: WatermarkPosition): 'top' | 'middle' | 'bottom' {
+  if (position.startsWith('top')) return 'top'
+  if (position.startsWith('bottom')) return 'bottom'
+  return 'middle'
+}
+
+/** Natural size of any drawable source (image, bitmap or canvas). */
+function sourceDimensions(source: CanvasImageSource): Dimensions {
+  const value = source as unknown as {
+    naturalWidth?: number
+    naturalHeight?: number
+    videoWidth?: number
+    videoHeight?: number
+    width: number
+    height: number
+  }
+  if (value.naturalWidth && value.naturalHeight) {
+    return { width: value.naturalWidth, height: value.naturalHeight }
+  }
+  if (value.videoWidth && value.videoHeight) {
+    return { width: value.videoWidth, height: value.videoHeight }
+  }
+  return { width: value.width, height: value.height }
+}
+
+function drawTextWatermark(
+  context: AnyContext,
+  watermark: Extract<Watermark, { kind: 'text' }>,
+  target: Dimensions,
+): void {
+  if (!watermark.text.trim()) return
+
+  const longest = Math.max(target.width, target.height)
+  const fontPx = Math.max(8, watermark.size * longest)
+  const margin = watermark.margin * longest
+  const col = column(watermark.position)
+  const rowName = row(watermark.position)
+
+  const x =
+    col === 'left'
+      ? margin
+      : col === 'right'
+        ? target.width - margin
+        : target.width / 2
+  const y =
+    rowName === 'top'
+      ? margin
+      : rowName === 'bottom'
+        ? target.height - margin
+        : target.height / 2
+
+  context.save()
+  context.globalAlpha = Math.min(1, Math.max(0, watermark.opacity))
+  context.translate(x, y)
+  context.rotate((watermark.rotation * Math.PI) / 180)
+  context.font = `${watermark.italic ? 'italic ' : ''}${
+    watermark.bold ? 'bold ' : ''
+  }${fontPx}px ${watermark.fontFamily}`
+  context.textAlign = col
+  context.textBaseline =
+    rowName === 'top' ? 'top' : rowName === 'bottom' ? 'bottom' : 'middle'
+  context.fillStyle = watermark.color
+  context.fillText(watermark.text, 0, 0)
+  context.restore()
+}
+
+function drawImageWatermark(
+  context: AnyContext,
+  logo: CanvasImageSource,
+  watermark: Extract<Watermark, { kind: 'image' }>,
+  target: Dimensions,
+): void {
+  const longest = Math.max(target.width, target.height)
+  const margin = watermark.margin * longest
+  const logoSize = sourceDimensions(logo)
+  const width = Math.max(8, watermark.scale * target.width)
+  const height = (width * logoSize.height) / logoSize.width
+  const col = column(watermark.position)
+  const rowName = row(watermark.position)
+
+  const x =
+    col === 'left'
+      ? margin
+      : col === 'right'
+        ? target.width - margin - width
+        : (target.width - width) / 2
+  const y =
+    rowName === 'top'
+      ? margin
+      : rowName === 'bottom'
+        ? target.height - margin - height
+        : (target.height - height) / 2
+
+  context.save()
+  context.globalAlpha = Math.min(1, Math.max(0, watermark.opacity))
+  context.translate(x + width / 2, y + height / 2)
+  context.rotate((watermark.rotation * Math.PI) / 180)
+  context.drawImage(logo, -width / 2, -height / 2, width, height)
+  context.restore()
+}
+
+/**
+ * Draw the base image and the watermark into `target`. Exported so the tool can
+ * render an identical live preview on the main thread without a round-trip.
+ */
+export function renderWatermark(
+  context: AnyContext,
+  base: CanvasImageSource,
+  logo: CanvasImageSource | null,
+  watermark: Watermark,
+  target: Dimensions,
+): void {
+  context.drawImage(base, 0, 0, target.width, target.height)
+
+  if (watermark.kind === 'text') {
+    drawTextWatermark(context, watermark, target)
+  } else if (logo) {
+    drawImageWatermark(context, logo, watermark, target)
+  }
+}
+
+export async function watermarkBitmap(
+  bitmap: ImageBitmap,
+  watermark: Watermark,
+  options: ProcessOptions,
+): Promise<ProcessResult> {
+  const target: Dimensions = { width: bitmap.width, height: bitmap.height }
+  const logo =
+    watermark.kind === 'image' ? await createImageBitmap(watermark.logo) : null
+
+  try {
+    const canvas = createCanvas(target.width, target.height)
+    const context = (canvas as OffscreenCanvas).getContext(
+      '2d',
+    ) as AnyContext | null
+    if (!context) throw new Error('image-context-unavailable')
+
+    context.imageSmoothingEnabled = true
+    context.imageSmoothingQuality = 'high'
+
+    // JPEG cannot store transparency, so flatten it onto a solid colour first.
+    if (options.format === 'image/jpeg') {
+      context.fillStyle = options.background ?? '#ffffff'
+      context.fillRect(0, 0, target.width, target.height)
+    }
+
+    renderWatermark(context, bitmap, logo, watermark, target)
+
+    const blob = await canvasToBlob(canvas, options.format, options.quality)
+    return {
+      blob,
+      width: target.width,
+      height: target.height,
+      format: options.format,
+    }
+  } finally {
+    logo?.close()
   }
 }
 

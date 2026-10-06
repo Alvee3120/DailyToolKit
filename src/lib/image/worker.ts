@@ -4,6 +4,7 @@ import {
   compressBitmapToTarget,
   processBitmap,
   transformBitmap,
+  watermarkBitmap,
 } from './pipeline'
 import type { ImageWorkerApi } from './types'
 
@@ -34,6 +35,15 @@ const api: ImageWorkerApi = {
     const bitmap = await decode(blob)
     try {
       return await transformBitmap(bitmap, transform, options)
+    } finally {
+      bitmap.close()
+    }
+  },
+
+  async watermark(blob, watermark, options) {
+    const bitmap = await decode(blob)
+    try {
+      return await watermarkBitmap(bitmap, watermark, options)
     } finally {
       bitmap.close()
     }

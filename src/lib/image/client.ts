@@ -4,6 +4,7 @@ import {
   compressBitmapToTarget,
   processBitmap,
   transformBitmap,
+  watermarkBitmap,
 } from './pipeline'
 import type {
   Dimensions,
@@ -13,6 +14,7 @@ import type {
   TargetProgress,
   TargetSizeOptions,
   TransformOptions,
+  Watermark,
 } from './types'
 
 const HEIC_PATTERN = /\.(heic|heif)$/i
@@ -98,6 +100,22 @@ export async function transformImage(
   const bitmap = await decode(blob)
   try {
     return await transformBitmap(bitmap, transform, options)
+  } finally {
+    bitmap.close()
+  }
+}
+
+export async function watermarkImage(
+  blob: Blob,
+  watermark: Watermark,
+  options: ProcessOptions,
+): Promise<ProcessResult> {
+  const api = getRemote()
+  if (api) return api.watermark(blob, watermark, options)
+
+  const bitmap = await decode(blob)
+  try {
+    return await watermarkBitmap(bitmap, watermark, options)
   } finally {
     bitmap.close()
   }
