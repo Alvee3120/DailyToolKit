@@ -1,6 +1,10 @@
 import { expose } from 'comlink'
 
-import { compressBitmapToTarget, processBitmap } from './pipeline'
+import {
+  compressBitmapToTarget,
+  processBitmap,
+  transformBitmap,
+} from './pipeline'
 import type { ImageWorkerApi } from './types'
 
 async function decode(blob: Blob): Promise<ImageBitmap> {
@@ -21,6 +25,15 @@ const api: ImageWorkerApi = {
     const bitmap = await decode(blob)
     try {
       return await compressBitmapToTarget(bitmap, options, onProgress)
+    } finally {
+      bitmap.close()
+    }
+  },
+
+  async transform(blob, transform, options) {
+    const bitmap = await decode(blob)
+    try {
+      return await transformBitmap(bitmap, transform, options)
     } finally {
       bitmap.close()
     }

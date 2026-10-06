@@ -7,7 +7,7 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
 | 0   | Project Setup & Deployment Pipeline                   | ✅     | 2026-10-05 |
 | 1   | App Shell & Shared Components                         | ✅     | 2026-10-05 |
 | 2   | Image Compress, Resize & Convert                      | ✅     | 2026-10-05 |
-| 3   | Image Crop, Rotate & Flip                             | ⬜     |            |
+| 3   | Image Crop, Rotate & Flip                             | ✅     | 2026-10-06 |
 | 4   | Watermark & Text Overlay                              | ⬜     |            |
 | 5   | Background Removal (AI, in-browser)                   | ⬜     |            |
 | 6   | PDF Pages: Images→PDF, Merge, Page Selector, Organize | ⬜     |            |
@@ -124,3 +124,38 @@ Status legend: ✅ done · 🚧 in progress · ⬜ not started
 - Note: the target-size search on a pathological 12 MP _noise_ image took ~13 s
   and downscaled to 3306×2480. Real photos converge much faster; a time
   estimate/cancel button is planned for Module 12.
+
+### Module 3 — Image Crop, Rotate & Flip (2026-10-06)
+
+- Built as **two registered tools** (`image-crop`, `image-rotate`) rather than one
+  page, matching the Module 2 decision: each gets its own route and chunk and
+  surfaces in search under its own words ("crop", "trim", "square" vs "rotate",
+  "flip", "mirror").
+- **Added a transform step to the shared image pipeline** (`src/lib/image`):
+  `TransformOptions` (crop + 90° rotation + flips), `transformedDimensions()` and
+  `transformBitmap()`, exposed through `transformImage()` and `useImageJob().runTransform()`.
+  It runs off the main thread like the other jobs. Draw order is crop → rotate → flip
+  (flip mirrors the finished result) so the CSS preview and canvas output agree.
+- **Crop is fully interactive** (`CropEditor`): draggable selection with four corner
+  handles, dimmed surroundings, rule-of-thirds grid, pointer events for mouse/touch/pen,
+  and arrow-key nudging. The selection is stored in **normalized (0–1) units**, so it is
+  independent of the on-screen image size; pure helpers in `logic.ts` handle clamping,
+  aspect-locked resizing and pixel conversion.
+- Aspect presets: Free, Original, 1:1, 4:3, 3:4, 16:9, 9:16, 3:2, 2:3. Choosing one
+  resets to the largest centered rectangle of that ratio.
+- **Rotate tool** does 90° steps (left/right) and flip horizontal/vertical, mirroring the
+  live preview with a CSS transform that matches the pipeline order. Output keeps the
+  source format (unknown/HEIC → JPG).
+- Orientation verified pixel-by-pixel in the browser: a 4-quadrant image with a black
+  top-left marker produced the exact expected corners for base, rotate-90, flip-H and
+  rotate-90+flip-H.
+- No new dependencies (lucide-react icons only), so `LICENSES.md` is unchanged.
+- Verified in a real browser: crop 400×300 → 300×300 centered square; rotate 400×300 →
+  300×400 with the `-rotated` suffix; home search ("crop", "trim", "mirror", "rotate",
+  "flip horizontal") returns the right tool; 360px viewport has no horizontal overflow and
+  every tap target is ≥44px. 75 unit tests pass.
+- Bundle: `image-crop` 2.71 kB gzip and `image-rotate` 1.74 kB gzip, both code-split; the
+  main chunk stays ~107 kB gzip.
+- Side fix: added `.kilo` to the ESLint ignores and `.gitignore` — a stray agent-worktree
+  copy inside the repo made typescript-eslint fail with "multiple candidate
+  TSConfigRootDirs".

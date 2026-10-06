@@ -7,7 +7,14 @@ import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
   {
-    ignores: ['dist', 'coverage', 'node_modules', '.commandcode', 'public'],
+    ignores: [
+      'dist',
+      'coverage',
+      'node_modules',
+      '.commandcode',
+      '.kilo',
+      'public',
+    ],
   },
   js.configs.recommended,
   tseslint.configs.recommended,

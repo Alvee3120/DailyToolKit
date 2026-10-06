@@ -6,12 +6,14 @@ import {
   normalizeForCanvas,
   processImage,
   readImageDimensions,
+  transformImage,
 } from '@/lib/image/client'
 import { detectImageFormat } from '@/lib/image/format'
 import type {
   ImageFormat,
   ProcessOptions,
   TargetSizeOptions,
+  TransformOptions,
 } from '@/lib/image/types'
 import { useObjectUrl } from '@/lib/useObjectUrl'
 
@@ -114,6 +116,32 @@ export function useImageJob() {
     [beginRun, source, t],
   )
 
+  const runTransform = useCallback(
+    async (transform: TransformOptions, options?: Partial<ProcessOptions>) => {
+      if (!source) return
+      const id = beginRun()
+      setStatus('processing')
+      setProgress(null)
+      setStage(null)
+
+      try {
+        const output = await transformImage(source.blob, transform, {
+          format: options?.format ?? source.format ?? 'image/jpeg',
+          quality: options?.quality ?? 0.92,
+          background: options?.background,
+        })
+        if (runId.current !== id) return
+        setResult(output)
+        setStatus('ready')
+      } catch {
+        if (runId.current !== id) return
+        setStatus('error')
+        setError(t('img.error.process'))
+      }
+    },
+    [beginRun, source, t],
+  )
+
   const runCompress = useCallback(
     async (options: TargetSizeOptions) => {
       if (!source) return
@@ -163,6 +191,7 @@ export function useImageJob() {
     resultUrl,
     select,
     runProcess,
+    runTransform,
     runCompress,
     reset,
   }

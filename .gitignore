@@ -26,6 +26,9 @@ dist-ssr
 # Command Code agent state
 .commandcode
 
+# Nested agent worktrees
+.kilo
+
 
 # Editor directories and files
 .vscode/*

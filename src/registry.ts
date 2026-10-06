@@ -11,7 +11,9 @@ import type { ComponentType, LazyExoticComponent } from 'react'
 
 import { imageCompressMeta } from '@/tools/image-compress/meta'
 import { imageConvertMeta } from '@/tools/image-convert/meta'
+import { imageCropMeta } from '@/tools/image-crop/meta'
 import { imageResizeMeta } from '@/tools/image-resize/meta'
+import { imageRotateMeta } from '@/tools/image-rotate/meta'
 
 export type ToolCategory = 'Image' | 'PDF' | 'Text' | 'Utilities'
 
@@ -49,6 +51,8 @@ export const tools: Tool[] = [
   imageCompressMeta,
   imageResizeMeta,
   imageConvertMeta,
+  imageCropMeta,
+  imageRotateMeta,
 ]
 
 /** Find tools matching a free-text query across name, description and keywords. */

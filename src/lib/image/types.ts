@@ -42,6 +42,30 @@ export interface ProcessResult {
   format: ImageFormat
 }
 
+/** Quarter-turn rotations, in degrees clockwise. */
+export type Rotation = 0 | 90 | 180 | 270
+
+/** A crop rectangle in source-image pixels. */
+export interface CropRect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+/**
+ * Crop, rotate and flip applied together. The crop is taken from the source
+ * first, then the result is rotated and flipped (so a flip mirrors what you
+ * see in the preview).
+ */
+export interface TransformOptions {
+  rotate?: Rotation
+  flipHorizontal?: boolean
+  flipVertical?: boolean
+  /** Region of the source to keep; defaults to the whole image. */
+  crop?: CropRect
+}
+
 export interface TargetProgress {
   /** 0–1. */
   fraction: number
@@ -55,5 +79,10 @@ export interface ImageWorkerApi {
     blob: Blob,
     options: TargetSizeOptions,
     onProgress?: (progress: TargetProgress) => void,
+  ): Promise<ProcessResult>
+  transform(
+    blob: Blob,
+    transform: TransformOptions,
+    options: ProcessOptions,
   ): Promise<ProcessResult>
 }

@@ -1,6 +1,10 @@
 import { proxy, wrap, type Remote } from 'comlink'
 
-import { compressBitmapToTarget, processBitmap } from './pipeline'
+import {
+  compressBitmapToTarget,
+  processBitmap,
+  transformBitmap,
+} from './pipeline'
 import type {
   Dimensions,
   ImageWorkerApi,
@@ -8,6 +12,7 @@ import type {
   ProcessResult,
   TargetProgress,
   TargetSizeOptions,
+  TransformOptions,
 } from './types'
 
 const HEIC_PATTERN = /\.(heic|heif)$/i
@@ -77,6 +82,22 @@ export async function processImage(
   const bitmap = await decode(blob)
   try {
     return await processBitmap(bitmap, options)
+  } finally {
+    bitmap.close()
+  }
+}
+
+export async function transformImage(
+  blob: Blob,
+  transform: TransformOptions,
+  options: ProcessOptions,
+): Promise<ProcessResult> {
+  const api = getRemote()
+  if (api) return api.transform(blob, transform, options)
+
+  const bitmap = await decode(blob)
+  try {
+    return await transformBitmap(bitmap, transform, options)
   } finally {
     bitmap.close()
   }

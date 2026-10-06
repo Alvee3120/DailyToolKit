@@ -1,12 +1,14 @@
 import { fitWithin, isLossy } from './format'
 import { findBestQuality, nextScale } from './search'
 import type {
+  CropRect,
   Dimensions,
   ImageFormat,
   ProcessOptions,
   ProcessResult,
   TargetProgress,
   TargetSizeOptions,
+  TransformOptions,
 } from './types'
 
 type AnyCanvas = OffscreenCanvas | HTMLCanvasElement
@@ -93,6 +95,103 @@ export async function processBitmap(
     height: bitmap.height,
   }
   const blob = await encodeBitmap(bitmap, target, options)
+  return {
+    blob,
+    width: target.width,
+    height: target.height,
+    format: options.format,
+  }
+}
+
+/** Clamp a crop rectangle to the source, keeping at least one pixel. */
+function resolveCrop(source: Dimensions, crop?: CropRect): CropRect {
+  const x = Math.min(Math.max(Math.round(crop?.x ?? 0), 0), source.width - 1)
+  const y = Math.min(Math.max(Math.round(crop?.y ?? 0), 0), source.height - 1)
+  const width = Math.min(
+    Math.max(Math.round(crop?.width ?? source.width), 1),
+    source.width - x,
+  )
+  const height = Math.min(
+    Math.max(Math.round(crop?.height ?? source.height), 1),
+    source.height - y,
+  )
+  return { x, y, width, height }
+}
+
+/** Size of the output after cropping, rotating and flipping. */
+export function transformedDimensions(
+  source: Dimensions,
+  transform: TransformOptions,
+): Dimensions {
+  const crop = resolveCrop(source, transform.crop)
+  const rotation = transform.rotate ?? 0
+  const swap = rotation === 90 || rotation === 270
+  return swap
+    ? { width: crop.height, height: crop.width }
+    : { width: crop.width, height: crop.height }
+}
+
+/**
+ * Draw the source through a crop + rotate + flip transform. The result is
+ * centered in the target canvas, so rotation and flipping never shift it.
+ */
+function drawTransformed(
+  context: AnyContext,
+  bitmap: ImageBitmap,
+  transform: TransformOptions,
+  target: Dimensions,
+): void {
+  const crop = resolveCrop(bitmap, transform.crop)
+  const rotation = transform.rotate ?? 0
+
+  context.save()
+  context.translate(target.width / 2, target.height / 2)
+  // Flip is applied after rotation, so it mirrors the finished result.
+  context.scale(
+    transform.flipHorizontal ? -1 : 1,
+    transform.flipVertical ? -1 : 1,
+  )
+  context.rotate((rotation * Math.PI) / 180)
+  context.drawImage(
+    bitmap,
+    crop.x,
+    crop.y,
+    crop.width,
+    crop.height,
+    -crop.width / 2,
+    -crop.height / 2,
+    crop.width,
+    crop.height,
+  )
+  context.restore()
+}
+
+export async function transformBitmap(
+  bitmap: ImageBitmap,
+  transform: TransformOptions,
+  options: ProcessOptions,
+): Promise<ProcessResult> {
+  const source: Dimensions = { width: bitmap.width, height: bitmap.height }
+  const target = transformedDimensions(source, transform)
+
+  const canvas = createCanvas(target.width, target.height)
+  const context = (canvas as OffscreenCanvas).getContext(
+    '2d',
+  ) as AnyContext | null
+  if (!context) throw new Error('image-context-unavailable')
+
+  context.imageSmoothingEnabled = true
+  context.imageSmoothingQuality = 'high'
+
+  // JPEG cannot store transparency, so flatten it onto a solid colour first.
+  if (options.format === 'image/jpeg') {
+    context.fillStyle = options.background ?? '#ffffff'
+    context.fillRect(0, 0, target.width, target.height)
+  }
+
+  drawTransformed(context, bitmap, transform, target)
+
+  const blob = await canvasToBlob(canvas, options.format, options.quality)
   return {
     blob,
     width: target.width,
